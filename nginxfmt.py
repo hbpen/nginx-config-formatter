@@ -342,6 +342,7 @@ def _standalone_run(program_arguments):
     arg_parser = argparse.ArgumentParser(description="Formats nginx configuration files in consistent way.")
 
     arg_parser.add_argument("-v", "--verbose", action="store_true", help="show formatted file names")
+    recursive_dirctory = arg_parser.add_argument("-r", "--recursive", action="store_true", help="format all the files that included in the directory")
 
     pipe_arg = arg_parser.add_argument("-", "--pipe",
                                        action="store_true",
@@ -384,8 +385,8 @@ def _standalone_run(program_arguments):
 
     format_options = FormatterOptions()
     format_options.indentation = args.indent
-    formatter = Formatter(format_options)
-
+    if recursive_directory:
+        pass
     if args.pipe:
         original_content = io.TextIOWrapper(sys.stdin.buffer, encoding='utf-8')
         print(formatter.format_string(original_content.read()))
