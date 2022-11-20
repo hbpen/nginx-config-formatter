@@ -7,12 +7,4 @@ http {
         listen [::]:80;
         server_name example.com;
     }
-
-    server {
-        listen 80;
-
-
-        listen [::]:80;
-        server_name example.com;
-    }
 }

@@ -47,6 +47,7 @@ class Formatter:
         lines = self._apply_bracket_template_tags(lines)
         lines = self._clean_lines(lines)
         lines = self._join_opening_bracket(lines)
+        lines = self._perform_attribute_indent(lines)
         lines = self._perform_indentation(lines)
 
         text = '\n'.join(lines)
@@ -280,9 +281,45 @@ class Formatter:
 
             if not line.startswith("#") and line.endswith('{'):
                 current_indent += 1
-
         return indented_lines
 
+    def _perform_attribute_indent(self, lines):
+        indented_lines = []
+        buf = []
+        for line in lines:
+            if line =="" or (not line.startswith("#") and (line.endswith('}') or line.endswith('{'))):
+                if( len(buf) > 0 ):
+                    indented_lines.extend( self._block_attribute_indent(buf) )
+                    buf = []
+                indented_lines.append( line )
+            else:
+                buf.append(line)
+        return indented_lines
+
+    def _block_attribute_indent(self, buf):
+        max_word_count = 0
+        m = [[] for _ in range(len(buf))]
+        indented_lines = [[] for _ in range(len(buf))]
+        for i, line in enumerate(buf):
+            if( len(line) > max_word_count ):
+                max_word_count = len(line)
+            m[i].extend(line.split(" "))
+        for i in range(max_word_count):
+            max_word_length = 0
+            for j, line in enumerate(buf):
+                if( len(m[j]) > i and len(m[j][i]) > max_word_length):
+                    max_word_length = len(m[j][i])
+            for j, line in enumerate(buf):
+                if( len(m[j])-1 == i):
+                    indented_lines[j].append( m[j][i])
+                elif( len(m[j]) > i):
+                    if( len(m[j][i]) < max_word_length):
+                        indented_lines[j].append( m[j][i] + ((max_word_length - len(m[j][i])) * " "))
+                    else:
+                        indented_lines[j].append( m[j][i])
+
+        indented_lines = [" ".join(word) for word in indented_lines]
+        return indented_lines
 
 @contextlib.contextmanager
 def _redirect_stdout_to_stderr():
